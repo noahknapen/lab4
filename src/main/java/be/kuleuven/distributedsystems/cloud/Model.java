@@ -3,6 +3,7 @@ package be.kuleuven.distributedsystems.cloud;
 import be.kuleuven.distributedsystems.cloud.entities.*;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.ParameterizedTypeReference;
@@ -21,12 +22,14 @@ public class Model {
     String API_KEY = "/?key=wCIoTqec6vGJijW2meeqSokanZuqOL";
 
     private ApplicationContext context;
+    @Autowired
+    private WebClient.Builder webClientBuilder;
 
     public List<Show> getShows() {
         List<Show> shows = null;
 
         // WebClient.builder()  context.getBean
-        shows = webClientBuilder.getBean()
+        shows = webClientBuilder
                 .baseUrl(RELIABLE_THEATRE_URL)
                 .build()
                 .get()
