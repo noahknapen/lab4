@@ -34,7 +34,6 @@ public class SecurityFilter extends OncePerRequestFilter {
             var jwt = JWT.decode(session.getValue());
             var email = jwt.getClaim("email").asString();
             var role = jwt.getClaim("role").asString();
-            System.out.println(email + role);
             // TODO: (level 2) verify Identity Token
 
 
