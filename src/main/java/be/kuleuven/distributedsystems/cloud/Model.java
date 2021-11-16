@@ -114,24 +114,88 @@ public class Model {
     }
 
     public Seat getSeat(String company, UUID showId, UUID seatId) {
-        Show seat = null;
+        Seat seat;
 
-        for (Seat potentialSeat : this.getAvailableSeats(company, showId)) {
-            if (potentialSeat.getShowId().equals(showId) && Objects.equals(potentialSeat.getCompany(), company)) {
-                seat = new ;
-            }
-        }
+        // WebClient.builder()  context.getBean
+        seat = webClientBuilder
+                .baseUrl("https://" + company + "/")
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment(showId.toString())
+                        .pathSegment("seats")
+                        .pathSegment(seatId.toString())
+                        // .queryParam("time", time.toString())
+                        // .queryParam("available", "true")
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Seat>() {})
+                .block();
+                // .getContent();
+
+        // seat = new ArrayList<>(seatCollection);
+
         return seat;
     }
 
     public Ticket getTicket(String company, UUID showId, UUID seatId) {
-        // TODO: return the ticket for the given seat
-        return null;
+        Ticket ticket;
+
+        // WebClient.builder()  context.getBean
+        ticket = webClientBuilder
+                .baseUrl("https://" + company + "/")
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment(showId.toString())
+                        .pathSegment("seats")
+                        .pathSegment(seatId.toString())
+                        .pathSegment("ticket")
+                        // .queryParam("time", time.toString())
+                        // .queryParam("available", "true")
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Ticket>() {})
+                .block();
+        // .getContent();
+
+        // seat = new ArrayList<>(seatCollection);
+
+        return ticket;
     }
 
     public List<Booking> getBookings(String customer) {
-        // TODO: return all bookings from the customer
-        return new ArrayList<>();
+        System.out.println(customer);
+        Ticket ticket;
+
+        // WebClient.builder()  context.getBean
+//        ticket = webClientBuilder
+//                .baseUrl("https://" + company + "/")
+//                .build()
+//                .get()
+//                .uri(uriBuilder -> uriBuilder
+//                        .pathSegment("shows")
+//                        .pathSegment(showId.toString())
+//                        .pathSegment("seats")
+//                        .pathSegment(seatId.toString())
+//                        .pathSegment("ticket")
+//                        // .queryParam("time", time.toString())
+//                        // .queryParam("available", "true")
+//                        .queryParam("key", API_KEY)
+//                        .build())
+//                .retrieve()
+//                .bodyToMono(new ParameterizedTypeReference<Ticket>() {})
+//                .block();
+//        // .getContent();
+//
+//        // seat = new ArrayList<>(seatCollection);
+//
+//        return ticket;
+        return null;
     }
 
     public List<Booking> getAllBookings() {
