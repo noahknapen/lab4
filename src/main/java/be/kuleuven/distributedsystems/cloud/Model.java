@@ -7,21 +7,24 @@ import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Component
 public class Model {
 
-    String RELIABLE_THEATRE_URL = "reliabletheatrecompany.com";
-    String API_KEY = "/?key=wCIoTqec6vGJijW2meeqSokanZuqOL";
+    String RELIABLE_THEATRE_URL = "https://reliabletheatrecompany.com/";
+    String API_KEY = "wCIoTqec6vGJijW2meeqSokanZuqOL";
 
     private ApplicationContext context;
+
     @Autowired
     private WebClient.Builder webClientBuilder;
 
@@ -29,7 +32,7 @@ public class Model {
         List<Show> shows = null;
 
         // WebClient.builder()  context.getBean
-        shows = webClientBuilder
+        Collection<Show> showsCollection = webClientBuilder
                 .baseUrl(RELIABLE_THEATRE_URL)
                 .build()
                 .get()
@@ -38,19 +41,20 @@ public class Model {
                         .queryParam("key", API_KEY)
                         .build())
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<CollectionModel<Shows>>() {})
+                .bodyToMono(new ParameterizedTypeReference<CollectionModel<Show>>() {})
                 .block()
                 .getContent();
 
-        return new ArrayList<>();
+        shows = new ArrayList<>(showsCollection);
+
+        return shows;
     }
 
     public Show getShow(String company, UUID showId) {
         Show show = null;
 
         for (Show potentialShow : this.getShows()) {
-
-            if (potentialShow.getShowId() == showId && Objects.equals(potentialShow.getCompany(), company)) {
+            if (potentialShow.getShowId().equals(showId) && Objects.equals(potentialShow.getCompany(), company)) {
                 show = new Show(company, showId, potentialShow.getName(), potentialShow.getLocation(), potentialShow.getImage());
             }
         }
@@ -59,17 +63,65 @@ public class Model {
 
     public List<LocalDateTime> getShowTimes(String company, UUID showId) {
         // TODO: return a list with all possible times for the given show
-        return new ArrayList<>();
+        List<LocalDateTime> times;
+
+        // WebClient.builder()  context.getBean
+        Collection<LocalDateTime> timesCollection = webClientBuilder
+                .baseUrl("https://" + company + "/")
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment(showId.toString())
+                        .pathSegment("times")
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<CollectionModel<LocalDateTime>>() {})
+                .block()
+                .getContent();
+
+        times = new ArrayList<>(timesCollection);
+
+        return times;
+
     }
 
     public List<Seat> getAvailableSeats(String company, UUID showId, LocalDateTime time) {
-        // TODO: return all available seats for a given show and time
-        return new ArrayList<>();
+        List<Seat> seats;
+
+        // WebClient.builder()  context.getBean
+        Collection<Seat> seatsCollection = webClientBuilder
+                .baseUrl("https://" + company + "/")
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment(showId.toString())
+                        .pathSegment("seats")
+                        .queryParam("time", time.toString())
+                        .queryParam("available", "true")
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<CollectionModel<Seat>>() {})
+                .block()
+                .getContent();
+
+        seats = new ArrayList<>(seatsCollection);
+
+        return seats;
     }
 
     public Seat getSeat(String company, UUID showId, UUID seatId) {
-        // TODO: return the given seat
-        return null;
+        Show seat = null;
+
+        for (Seat potentialSeat : this.getAvailableSeats(company, showId)) {
+            if (potentialSeat.getShowId().equals(showId) && Objects.equals(potentialSeat.getCompany(), company)) {
+                seat = new ;
+            }
+        }
+        return seat;
     }
 
     public Ticket getTicket(String company, UUID showId, UUID seatId) {
