@@ -23,6 +23,7 @@ public class Model {
 
     String RELIABLE_THEATRE_URL = "https://reliabletheatrecompany.com/";
     String API_KEY = "wCIoTqec6vGJijW2meeqSokanZuqOL";
+    ArrayList<Booking> bookings;
 
     private ApplicationContext context;
 
@@ -171,36 +172,20 @@ public class Model {
     }
 
 
-    public List<Booking> getBookings(String customer){
-        // WebClient.builder()  context.getBean
-//        ticket = webClientBuilder
-//                .baseUrl("https://" + company + "/")
-//                .build()
-//                .get()
-//                .uri(uriBuilder -> uriBuilder
-//                        .pathSegment("shows")
-//                        .pathSegment(showId.toString())
-//                        .pathSegment("seats")
-//                        .pathSegment(seatId.toString())
-//                        .pathSegment("ticket")
-//                        // .queryParam("time", time.toString())
-//                        // .queryParam("available", "true")
-//                        .queryParam("key", API_KEY)
-//                        .build())
-//                .retrieve()
-//                .bodyToMono(new ParameterizedTypeReference<Ticket>() {})
-//                .block();
-//        // .getContent();
-//
-//        // seat = new ArrayList<>(seatCollection);
-//
-//        return ticket;
-        return null;
-    }
-
     public List<Booking> getAllBookings() {
 
-        return new ArrayList<>();
+        return bookings;}
+
+
+    public List<Booking> getBookings(String customer) {
+        ArrayList<Booking> customerBookings = new ArrayList<>();
+
+        for (Booking booking : this.bookings) {
+            if (booking.getCustomer().equals(customer)) {
+                customerBookings.add(booking);
+            }
+        }
+        return customerBookings;
     }
 
     public Set<String> getBestCustomers() {
