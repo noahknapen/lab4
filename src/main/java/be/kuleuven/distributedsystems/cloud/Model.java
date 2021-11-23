@@ -186,7 +186,34 @@ public class Model {
 
     public Set<String> getBestCustomers() {
         // TODO: return the best customer (highest number of tickets, return all of them if multiple customers have an equal amount)
-        return null;
+        LinkedHashMap<String, Integer> customerTickets = new LinkedHashMap<>();
+
+        for (Booking booking : this.bookings) {
+            String customer = booking.getCustomer();
+
+            if (customerTickets.containsKey(customer)) {
+                customerTickets.put(customer, customerTickets.get(customer) + booking.getTickets().size());
+            } else {
+                customerTickets.put(customer, booking.getTickets().size());
+            }
+        }
+
+        Set<String> bestCustomers = new LinkedHashSet<>();
+        int highestTickets = this.bookings.get(0).getTickets().size();
+
+        bestCustomers.add(this.bookings.get(0).getCustomer());
+
+        for (String customer : customerTickets.keySet()) {
+
+            if (customerTickets.get(customer) > highestTickets) {
+                highestTickets = customerTickets.get(customer);
+                bestCustomers.clear();
+                bestCustomers.add(customer);
+            } else if (customerTickets.get(customer) == highestTickets) {
+                bestCustomers.add(customer);
+            }
+        }
+        return bestCustomers;
     }
 
     public void confirmQuotes(List<Quote> quotes, String customer) {
