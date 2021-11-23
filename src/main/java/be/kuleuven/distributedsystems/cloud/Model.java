@@ -25,7 +25,7 @@ public class Model {
 
     String RELIABLE_THEATRE_URL = "https://reliabletheatrecompany.com/";
     String API_KEY = "wCIoTqec6vGJijW2meeqSokanZuqOL";
-    ArrayList<Booking> bookings;
+    ArrayList<Booking> bookings = new ArrayList<>();
 
     private ApplicationContext context;
 
@@ -168,7 +168,7 @@ public class Model {
                     .block();
         } catch (WebClientResponseException e) {
             System.out.println("Ticket has been stolen");
-            ticket = null;
+            ticket = new Ticket();
         }
         // .getContent();
 
@@ -185,45 +185,62 @@ public class Model {
 
     public List<Booking> getBookings(String customer) {
         ArrayList<Booking> customerBookings = new ArrayList<>();
-
-        for (Booking booking : this.bookings) {
-            if (booking.getCustomer().equals(customer)) {
-                customerBookings.add(booking);
+        try{
+            for (Booking booking : this.bookings) {
+                if (booking.getCustomer().equals(customer)) {
+                    customerBookings.add(booking);
+                }
             }
+            return customerBookings;
         }
-        return customerBookings;
+
+
+        catch (Error e){
+            System.out.println(e.getCause());
+            return Collections.EMPTY_LIST;
+        }
     }
 
     public Set<String> getBestCustomers() {
         // TODO: return the best customer (highest number of tickets, return all of them if multiple customers have an equal amount)
         LinkedHashMap<String, Integer> customerTickets = new LinkedHashMap<>();
+        try {
+            for (Booking booking : this.bookings) {
+                String customer = booking.getCustomer();
 
-        for (Booking booking : this.bookings) {
-            String customer = booking.getCustomer();
-
-            if (customerTickets.containsKey(customer)) {
-                customerTickets.put(customer, customerTickets.get(customer) + booking.getTickets().size());
-            } else {
-                customerTickets.put(customer, booking.getTickets().size());
+                if (customerTickets.containsKey(customer)) {
+                    customerTickets.put(customer, customerTickets.get(customer) + booking.getTickets().size());
+                } else {
+                    customerTickets.put(customer, booking.getTickets().size());
+                }
             }
+
+            Set<String> bestCustomers = new LinkedHashSet<>();
+            int highestTickets = this.bookings.get(0).getTickets().size();
+
+            bestCustomers.add(this.bookings.get(0).getCustomer());
+
+            for (String customer : customerTickets.keySet()) {
+
+                if (customerTickets.get(customer) > highestTickets) {
+                    highestTickets = customerTickets.get(customer);
+                    bestCustomers.clear();
+                    bestCustomers.add(customer);
+                } else if (customerTickets.get(customer) == highestTickets) {
+                    bestCustomers.add(customer);
+                }
+            }
+            return bestCustomers;
+        }
+        catch (Error e){
+            System.out.println(e.getCause());
+            Set<String> dummy= new HashSet<>();
+            dummy.add("no bookings");
+            return dummy;
         }
 
-        Set<String> bestCustomers = new LinkedHashSet<>();
-        int highestTickets = this.bookings.get(0).getTickets().size();
 
-        bestCustomers.add(this.bookings.get(0).getCustomer());
 
-        for (String customer : customerTickets.keySet()) {
-
-            if (customerTickets.get(customer) > highestTickets) {
-                highestTickets = customerTickets.get(customer);
-                bestCustomers.clear();
-                bestCustomers.add(customer);
-            } else if (customerTickets.get(customer) == highestTickets) {
-                bestCustomers.add(customer);
-            }
-        }
-        return bestCustomers;
     }
 
     public void confirmQuotes(List<Quote> quotes, String customer) {
