@@ -243,6 +243,5 @@ public class Model {
                 customer
         );
         bookings.add(booking);
-        // TODO: reserve all seats for the given quotes
     }
 }
