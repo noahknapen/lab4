@@ -13,6 +13,7 @@ import org.springframework.hateoas.server.core.TemplateVariableAwareLinkBuilderS
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
@@ -146,24 +147,29 @@ public class Model {
         Ticket ticket;
 
         // WebClient.builder()  context.getBean
-        ticket = webClientBuilder
-                .baseUrl("https://" + company + "/")
-                .build()
-                .put()
-                .uri(uriBuilder -> uriBuilder
-                        .pathSegment("shows")
-                        .pathSegment(showId.toString())
-                        .pathSegment("seats")
-                        .pathSegment(seatId.toString())
-                        .pathSegment("ticket")
-                        // .queryParam("time", time.toString())
-                        // .queryParam("available", "true")
-                        .queryParam("key", API_KEY)
-                        .queryParam("customer",customer)
-                        .build())
-                .retrieve()
-                .bodyToMono(Ticket.class)
-                .block();
+        try {
+            ticket = webClientBuilder
+                    .baseUrl("https://" + company + "/")
+                    .build()
+                    .put()
+                    .uri(uriBuilder -> uriBuilder
+                            .pathSegment("shows")
+                            .pathSegment(showId.toString())
+                            .pathSegment("seats")
+                            .pathSegment(seatId.toString())
+                            .pathSegment("ticket")
+                            // .queryParam("time", time.toString())
+                            // .queryParam("available", "true")
+                            .queryParam("key", API_KEY)
+                            .queryParam("customer", customer)
+                            .build())
+                    .retrieve()
+                    .bodyToMono(Ticket.class)
+                    .block();
+        } catch (WebClientResponseException e) {
+            System.out.println("Ticket has been stolen");
+            ticket = null;
+        }
         // .getContent();
 
         // seat = new ArrayList<>(seatCollection);
