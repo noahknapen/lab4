@@ -1,6 +1,7 @@
 package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.*;
+import com.google.pubsub.v1.TopicName;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.checkerframework.checker.units.qual.A;
@@ -27,6 +28,8 @@ public class Model {
 
     @Autowired
     private WebClient.Builder webClientBuilder;
+
+    private ArrayList<Booking> bookings;
 
     public List<Show> getShows() {
         List<Show> shows = null;
@@ -62,7 +65,6 @@ public class Model {
     }
 
     public List<LocalDateTime> getShowTimes(String company, UUID showId) {
-        // TODO: return a list with all possible times for the given show
         List<LocalDateTime> times;
 
         // WebClient.builder()  context.getBean
@@ -168,10 +170,8 @@ public class Model {
         return ticket;
     }
 
-    public List<Booking> getBookings(String customer) {
-        System.out.println(customer);
-        Ticket ticket;
 
+    public List<Booking> getBookings(String customer){
         // WebClient.builder()  context.getBean
 //        ticket = webClientBuilder
 //                .baseUrl("https://" + company + "/")
@@ -199,7 +199,7 @@ public class Model {
     }
 
     public List<Booking> getAllBookings() {
-        // TODO: return all bookings
+
         return new ArrayList<>();
     }
 
@@ -209,6 +209,33 @@ public class Model {
     }
 
     public void confirmQuotes(List<Quote> quotes, String customer) {
+        //dit maakt een booking save list of bookings univailble all those seats is tthis an hardcoded database?
+        ArrayList<Ticket> tickets= new ArrayList<>();
+        for (Quote quote:quotes){
+            UUID show= quote.getShowId();
+            UUID seat= quote.getSeatId();
+
+            Ticket ticket= webClientBuilder.baseUrl(RELIABLE_THEATRE_URL)
+                    .build()
+                    .post()
+                    .uri(uriBuilder -> uriBuilder
+                            .pathSegment("shows",show.toString(),seat.toString())
+                            .pathSegment("ticket")
+                            .queryParam("costumer",customer)
+                            .queryParam("key", API_KEY)
+                            .build())
+                    .body(Mono .just(quote), Quote.class)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Ticket>() {
+                    }).block();
+            tickets.add(ticket);
+        }
+        Booking booking= new Booking(UUID.randomUUID(),
+                LocalDateTime.now(),
+                tickets,
+                customer
+        );
+        bookings.add(booking);
         // TODO: reserve all seats for the given quotes
     }
 }
