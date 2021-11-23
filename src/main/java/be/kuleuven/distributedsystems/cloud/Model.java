@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.server.core.TemplateVariableAwareLinkBuilderSupport;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -29,8 +30,6 @@ public class Model {
 
     @Autowired
     private WebClient.Builder webClientBuilder;
-
-    private ArrayList<Booking> bookings;
 
     public List<Show> getShows() {
         List<Show> shows = null;
@@ -143,14 +142,14 @@ public class Model {
         return seat;
     }
 
-    public Ticket getTicket(String company, UUID showId, UUID seatId) {
+    public Ticket getTicket(String company, UUID showId, UUID seatId, String customer) {
         Ticket ticket;
 
         // WebClient.builder()  context.getBean
         ticket = webClientBuilder
                 .baseUrl("https://" + company + "/")
                 .build()
-                .get()
+                .put()
                 .uri(uriBuilder -> uriBuilder
                         .pathSegment("shows")
                         .pathSegment(showId.toString())
@@ -160,9 +159,10 @@ public class Model {
                         // .queryParam("time", time.toString())
                         // .queryParam("available", "true")
                         .queryParam("key", API_KEY)
+                        .queryParam("customer",customer)
                         .build())
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<Ticket>() {})
+                .bodyToMono(Ticket.class)
                 .block();
         // .getContent();
 
@@ -226,20 +226,9 @@ public class Model {
         for (Quote quote:quotes){
             UUID show= quote.getShowId();
             UUID seat= quote.getSeatId();
+            String company = quote.getCompany();
 
-            Ticket ticket= webClientBuilder.baseUrl(RELIABLE_THEATRE_URL)
-                    .build()
-                    .post()
-                    .uri(uriBuilder -> uriBuilder
-                            .pathSegment("shows",show.toString(),seat.toString())
-                            .pathSegment("ticket")
-                            .queryParam("costumer",customer)
-                            .queryParam("key", API_KEY)
-                            .build())
-                    .body(Mono .just(quote), Quote.class)
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<Ticket>() {
-                    }).block();
+            Ticket ticket= getTicket(company, show, seat, customer);
             tickets.add(ticket);
         }
         Booking booking= new Booking(UUID.randomUUID(),
