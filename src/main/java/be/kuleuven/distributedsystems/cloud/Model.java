@@ -47,13 +47,21 @@ public class Model {
     }
 
     public Show getShow(String company, UUID showId) {
-        Show show = null;
 
-        for (Show potentialShow : this.getShows()) {
-            if (potentialShow.getShowId().equals(showId) && Objects.equals(potentialShow.getCompany(), company)) {
-                show = new Show(company, showId, potentialShow.getName(), potentialShow.getLocation(), potentialShow.getImage());
-            }
-        }
+        // WebClient.builder()  context.getBean
+        Show show = webClientBuilder
+                .baseUrl("https://" + company + "/")
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment(showId.toString())
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Show>() {})
+                .block();
+
         return show;
     }
 
