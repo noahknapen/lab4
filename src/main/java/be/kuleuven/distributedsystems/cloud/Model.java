@@ -32,7 +32,7 @@ public class Model {
     @Autowired
     private WebClient.Builder webClientBuilder;
 
-    public List<Show> getShows() {
+    public List<Show> getShows() {//skip
         List<Show> shows = null;
 
         // WebClient.builder()  context.getBean
@@ -54,7 +54,7 @@ public class Model {
         return shows;
     }
 
-    public Show getShow(String company, UUID showId) {
+    public Show getShow(String company, UUID showId) {//skip
         Show show = null;
 
         for (Show potentialShow : this.getShows()) {
@@ -65,7 +65,7 @@ public class Model {
         return show;
     }
 
-    public List<LocalDateTime> getShowTimes(String company, UUID showId) {
+    public List<LocalDateTime> getShowTimes(String company, UUID showId) {//ni doen
         List<LocalDateTime> times;
 
         // WebClient.builder()  context.getBean
@@ -116,7 +116,7 @@ public class Model {
         return seats;
     }
 
-    public Seat getSeat(String company, UUID showId, UUID seatId) {
+    public Seat getSeat(String company, UUID showId, UUID seatId) { //googlefiene
         Seat seat;
 
         // WebClient.builder()  context.getBean
@@ -143,7 +143,7 @@ public class Model {
         return seat;
     }
 
-    public Ticket getTicket(String company, UUID showId, UUID seatId, String customer) {
+    public Ticket getTicket(String company, UUID showId, UUID seatId, String customer) { //zowizo googlefien
         Ticket ticket;
 
         // WebClient.builder()  context.getBean
@@ -164,7 +164,7 @@ public class Model {
                             .queryParam("customer", customer)
                             .build())
                     .retrieve()
-                    .bodyToMono(Ticket.class)
+                    .bodyToMono(new ParameterizedTypeReference<Ticket>() {})
                     .block();
         } catch (WebClientResponseException e) {
             System.out.println("Ticket has been stolen");
