@@ -119,7 +119,6 @@ public class Model {
     public Seat getSeat(String company, UUID showId, UUID seatId) { //googlefiene
         Seat seat;
 
-        // WebClient.builder()  context.getBean
         seat = webClientBuilder
                 .baseUrl("https://" + company + "/")
                 .build()
@@ -136,9 +135,6 @@ public class Model {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Seat>() {})
                 .block();
-                // .getContent();
-
-        // seat = new ArrayList<>(seatCollection);
 
         return seat;
     }
@@ -158,8 +154,6 @@ public class Model {
                             .pathSegment("seats")
                             .pathSegment(seatId.toString())
                             .pathSegment("ticket")
-                            // .queryParam("time", time.toString())
-                            // .queryParam("available", "true")
                             .queryParam("key", API_KEY)
                             .queryParam("customer", customer)
                             .build())
@@ -176,8 +170,8 @@ public class Model {
 
 
     public List<Booking> getAllBookings() {
-
-        return bookings;}
+        return bookings;
+    }
 
 
     public List<Booking> getBookings(String customer) {
@@ -189,10 +183,7 @@ public class Model {
                 }
             }
             return customerBookings;
-        }
-
-
-        catch (Error e){
+        } catch (Error e){
             System.out.println(e.getCause());
             return Collections.EMPTY_LIST;
         }

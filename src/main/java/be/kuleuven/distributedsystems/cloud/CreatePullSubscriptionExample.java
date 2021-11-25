@@ -6,7 +6,11 @@ import com.google.pubsub.v1.PushConfig;
 import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.TopicName;
 import java.io.IOException;
-
+// overal waar een create opgeroepen wordt, moet je dit in de create() zetten
+// TopicAdminSettings.newBuilder()
+//         .setTransportChannelProvider(channelProvider)
+//         .setCredentialsProvider(credentialsProvider)
+//         .build()
 public class CreatePullSubscriptionExample {
     public static void main(String... args) throws Exception {
         // TODO(developer): Replace these variables before running the sample.
