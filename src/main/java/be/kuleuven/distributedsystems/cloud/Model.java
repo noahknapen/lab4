@@ -143,7 +143,7 @@ public class Model {
         return seat;
     }
 
-    public Ticket getTicket(String company, UUID showId, UUID seatId, String customer) { //zowizo googlefien
+    public Ticket putTicket(String company, UUID showId, UUID seatId, String customer) {
         Ticket ticket;
 
         // WebClient.builder()  context.getBean
@@ -170,9 +170,6 @@ public class Model {
             System.out.println("Ticket has been stolen");
             ticket = new Ticket();
         }
-        // .getContent();
-
-        // seat = new ArrayList<>(seatCollection);
 
         return ticket;
     }
@@ -251,7 +248,7 @@ public class Model {
             UUID seat= quote.getSeatId();
             String company = quote.getCompany();
 
-            Ticket ticket= getTicket(company, show, seat, customer);
+            Ticket ticket= putTicket(company, show, seat, customer);
             tickets.add(ticket);
         }
         Booking booking= new Booking(UUID.randomUUID(),
