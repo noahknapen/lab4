@@ -243,7 +243,7 @@ public class Model {
 
     }
 
-    public void confirmQuotes(List<Quote> quotes, String customer) {
+    public void confirmQuotes(List<Quote> quotes, String customer) { //hierin pub subben dit zijn allemaal put requests zet in de subriber
         //dit maakt een booking save list of bookings univailble all those seats is tthis an hardcoded database?
         ArrayList<Ticket> tickets= new ArrayList<>();
         for (Quote quote:quotes){
