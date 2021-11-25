@@ -1,6 +1,7 @@
 package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.*;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.google.api.core.ApiFuture;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -16,6 +17,7 @@ import io.grpc.ManagedChannelBuilder;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.checkerframework.checker.units.qual.A;
+import org.eclipse.jetty.util.ajax.JSONPojoConvertor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -173,7 +175,7 @@ public class Model {
 
     public Ticket putTicket(String company, UUID showId, UUID seatId, String customer) {
         Ticket ticket;
-
+        System.out.println("Company "+company+"showId "+showId+"seatId "+seatId+"Customer "+customer);
         // WebClient.builder()  context.getBean
         try {
             ticket = webClientBuilder
@@ -193,6 +195,7 @@ public class Model {
                     .bodyToMono(new ParameterizedTypeReference<Ticket>() {})
                     .block();
         } catch (WebClientResponseException e) {
+            e.printStackTrace();
             System.out.println("Ticket has been stolen");
             ticket = new Ticket();
         }
@@ -271,10 +274,19 @@ public class Model {
 
     public void confirmQuotes(List<Quote> quotes, String customer) throws ExecutionException, InterruptedException { //hierin pub subben dit zijn allemaal put requests zet in de subriber
         //dit maakt een booking save list of bookings univailble all those seats is tthis an hardcoded database?
-        PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(ByteString.copyFrom(SerializationUtils.serialize(quotes))).build();
+        ;
+        Quote quote=new Quote("ik.com",new UUID(1L,1L),new UUID(2L,2L));
+        String str= Serializer.serialize(quote);
+        System.out.println(str);
+        Quote quote1=Serializer.deserializeQuote(str);
+        System.out.println(quote1.getSeatId().toString());
+        System.out.println(2L);
+        quotes.set(0, quote);
 
+        String message = customer+"::::::::"+Serializer.serialize(quotes);
+        ByteString data = ByteString.copyFromUtf8(message);
+        PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
         ApiFuture<String> messageIdFuture =publisher.publish(pubsubMessage);
-
         String messageId = messageIdFuture.get();
         System.out.println("Published message ID: " + messageId);
 //        ArrayList<Ticket> tickets= new ArrayList<>();

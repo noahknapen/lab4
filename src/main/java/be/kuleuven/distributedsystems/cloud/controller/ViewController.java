@@ -1,10 +1,12 @@
 package be.kuleuven.distributedsystems.cloud.controller;
 
 import be.kuleuven.distributedsystems.cloud.Model;
-import be.kuleuven.distributedsystems.cloud.entities.Quote;
-import be.kuleuven.distributedsystems.cloud.entities.Seat;
-import be.kuleuven.distributedsystems.cloud.entities.Show;
-import be.kuleuven.distributedsystems.cloud.entities.Ticket;
+import be.kuleuven.distributedsystems.cloud.entities.*;
+import com.google.firebase.messaging.Message;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.pubsub.v1.PubsubMessage;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -13,15 +15,18 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.SerializationUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 @RestController
 public class ViewController {
@@ -68,17 +73,40 @@ public class ViewController {
         return modelAndView;
     }
 
+    private final Gson gson = new Gson();
+    private final JsonParser jsonParser = new JsonParser();
+
 
     @ResponseStatus(value = HttpStatus.ACCEPTED)
     @PostMapping("/subscription")
-    public void puttickets(@RequestBody String body){
-        JSONObject jsonObject = new JSONObject(args[1]);
-        JSONObject jsonDATA= jsonObject.getJSONObject("data");
-        String message = jsonDATA.getString("message");
+    public ResponseEntity<Void> puttickets(@RequestBody String body){
 
-        System.out.println("HEY");
+        JsonElement jsonRoot = jsonParser.parse(body);
+        String messageStr = jsonRoot.getAsJsonObject().get("message").getAsJsonObject().get("data").getAsString();
+        System.out.println(messageStr);
+
+        String decoded = decode(messageStr);
+        String[] snipped= decoded.split("::::::::");
+        String customer=snipped[0];
+        List<Quote> quotes=Serializer.deserializeListQuote(snipped[1]);
+        for (Quote quote:quotes){
+            System.out.println("COMPANYY "+quote.getCompany());
+        }
+        System.out.println("DECODED "+decoded);
         System.out.println(body);
+        ArrayList<Ticket> tickets= new ArrayList<>();
+        for (Quote quote:quotes){
+            UUID show= quote.getShowId();
+            UUID seat= quote.getSeatId();
+            String company = quote.getCompany();
 
+            Ticket ticket= model.putTicket(company, show, seat, customer);
+            tickets.add(ticket);
+    }
+        return ResponseEntity.ok().build();
+    }
+    private String decode(String data) {
+        return new String(Base64.getDecoder().decode(data));
     }
     @GetMapping("/shows/{company}/{showId}/{time}")
     public ModelAndView viewShowSeats(
