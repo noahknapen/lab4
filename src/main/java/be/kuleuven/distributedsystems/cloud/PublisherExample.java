@@ -17,15 +17,18 @@ import java.util.concurrent.TimeUnit;
 
 public class PublisherExample {
 
-    public static void main(String... args) throws Exception {
+    private TransportChannelProvider channelProvider;
+    private CredentialsProvider credentialsProvider;
+
+    public void main(String... args) throws Exception {
         String hostport = System.getenv("PUBSUB_EMULATOR_HOST");
         System.out.println("[PUBLISHEREXAMPLE]" + hostport);
         ManagedChannel channel = ManagedChannelBuilder.forTarget("localhost:8083").usePlaintext().build();//of waar de pub sub emulator is
 
         try {
-            TransportChannelProvider channelProvider =
+            channelProvider =
                     FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
-            CredentialsProvider credentialsProvider = NoCredentialsProvider.create();
+            credentialsProvider = NoCredentialsProvider.create();
 
             // Set the channel and credentials provider when creating a `TopicAdminClient`.
             // Similarly for SubscriptionAdminClient
@@ -54,6 +57,7 @@ public class PublisherExample {
             String messageId = messageIdFuture.get();
             System.out.println("Published message ID: " + messageId);
 
+            /*
             // TODO(developer): Replace these variables before running the sample.
             String projectId = "demo-distributed-systems-kul";
             String subscriptionId = "my_sub";
@@ -61,7 +65,7 @@ public class PublisherExample {
             String pushEndpoint = "http://localhost:3000/";
 
             createPushSubscriptionExample(projectId, subscriptionId, topicId, pushEndpoint, channelProvider, credentialsProvider);
-
+*/
         } catch (IOException | InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
@@ -71,9 +75,15 @@ public class PublisherExample {
         }*/
     }
 
-    public static void createPushSubscriptionExample(
-            String projectId, String subscriptionId, String topicId, String pushEndpoint, TransportChannelProvider channelProvider, CredentialsProvider credentialsProvider)
-            throws IOException {
+    public void createPushSubscriptionExample() throws IOException {
+    // public static void createPushSubscriptionExample(String projectId, String subscriptionId, String topicId, String pushEndpoint, TransportChannelProvider channelProvider, CredentialsProvider credentialsProvider) throws IOException {
+
+        // TODO(developer): Replace these variables before running the sample.
+        String projectId = "demo-distributed-systems-kul";
+        String subscriptionId = "my_sub";
+        String topicId = "my_topic";
+        String pushEndpoint = "http://localhost:3000/";
+
         try (SubscriptionAdminClient subscriptionAdminClient = SubscriptionAdminClient.create(
                 SubscriptionAdminSettings.newBuilder()
                         .setTransportChannelProvider(channelProvider)

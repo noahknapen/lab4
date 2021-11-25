@@ -9,14 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.server.core.TemplateVariableAwareLinkBuilderSupport;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -28,6 +24,16 @@ public class Model {
     ArrayList<Booking> bookings = new ArrayList<>();
 
     private ApplicationContext context;
+    private PublisherExample publisher;
+
+    public Model() {
+        this.publisher = new PublisherExample();
+        try {
+            this.publisher.main();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @Autowired
     private WebClient.Builder webClientBuilder;
@@ -175,6 +181,12 @@ public class Model {
 
 
     public List<Booking> getBookings(String customer) {
+       /* try {
+            this.publisher.createPushSubscriptionExample();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+
         ArrayList<Booking> customerBookings = new ArrayList<>();
         try{
             for (Booking booking : this.bookings) {
