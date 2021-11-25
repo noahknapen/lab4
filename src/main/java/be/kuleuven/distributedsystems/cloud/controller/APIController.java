@@ -17,7 +17,7 @@ import java.util.UUID;
 @RequestMapping("/api")
 public class APIController {
     private final Model model;
-    private Booking booking;//deze booking moet aangemaakt worden door confirmQQuote
+
     @Autowired
     public APIController(Model model) {
         this.model = model;
