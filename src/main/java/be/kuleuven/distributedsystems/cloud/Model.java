@@ -1,14 +1,22 @@
 package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.*;
+import com.google.pubsub.v1.TopicName;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.server.core.TemplateVariableAwareLinkBuilderSupport;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -24,7 +32,7 @@ public class Model {
     @Autowired
     private WebClient.Builder webClientBuilder;
 
-    public List<Show> getShows() {
+    public List<Show> getShows() {//skip
         List<Show> shows = null;
 
         // WebClient.builder()  context.getBean
@@ -46,26 +54,18 @@ public class Model {
         return shows;
     }
 
-    public Show getShow(String company, UUID showId) {
+    public Show getShow(String company, UUID showId) {//skip
+        Show show = null;
 
-        // WebClient.builder()  context.getBean
-        Show show = webClientBuilder
-                .baseUrl("https://" + company + "/")
-                .build()
-                .get()
-                .uri(uriBuilder -> uriBuilder
-                        .pathSegment("shows")
-                        .pathSegment(showId.toString())
-                        .queryParam("key", API_KEY)
-                        .build())
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<Show>() {})
-                .block();
-
+        for (Show potentialShow : this.getShows()) {
+            if (potentialShow.getShowId().equals(showId) && Objects.equals(potentialShow.getCompany(), company)) {
+                show = new Show(company, showId, potentialShow.getName(), potentialShow.getLocation(), potentialShow.getImage());
+            }
+        }
         return show;
     }
 
-    public List<LocalDateTime> getShowTimes(String company, UUID showId) {
+    public List<LocalDateTime> getShowTimes(String company, UUID showId) {//ni doen
         List<LocalDateTime> times;
 
         // WebClient.builder()  context.getBean
@@ -116,7 +116,7 @@ public class Model {
         return seats;
     }
 
-    public Seat getSeat(String company, UUID showId, UUID seatId) {
+    public Seat getSeat(String company, UUID showId, UUID seatId) { //googlefiene
         Seat seat;
 
         // WebClient.builder()  context.getBean
@@ -164,7 +164,7 @@ public class Model {
                             .queryParam("customer", customer)
                             .build())
                     .retrieve()
-                    .bodyToMono(Ticket.class)
+                    .bodyToMono(new ParameterizedTypeReference<Ticket>() {})
                     .block();
         } catch (WebClientResponseException e) {
             System.out.println("Ticket has been stolen");
@@ -173,6 +173,7 @@ public class Model {
 
         return ticket;
     }
+
 
     public List<Booking> getAllBookings() {
 
@@ -256,5 +257,6 @@ public class Model {
                 customer
         );
         bookings.add(booking);
+        // TODO: reserve all seats for the given quotes
     }
 }
