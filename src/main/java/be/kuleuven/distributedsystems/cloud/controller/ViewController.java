@@ -4,14 +4,20 @@ import be.kuleuven.distributedsystems.cloud.Model;
 import be.kuleuven.distributedsystems.cloud.entities.Quote;
 import be.kuleuven.distributedsystems.cloud.entities.Seat;
 import be.kuleuven.distributedsystems.cloud.entities.Show;
+import be.kuleuven.distributedsystems.cloud.entities.Ticket;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -62,6 +68,18 @@ public class ViewController {
         return modelAndView;
     }
 
+
+    @ResponseStatus(value = HttpStatus.ACCEPTED)
+    @PostMapping("/subscription")
+    public void puttickets(@RequestBody String body){
+        JSONObject jsonObject = new JSONObject(args[1]);
+        JSONObject jsonDATA= jsonObject.getJSONObject("data");
+        String message = jsonDATA.getString("message");
+
+        System.out.println("HEY");
+        System.out.println(body);
+
+    }
     @GetMapping("/shows/{company}/{showId}/{time}")
     public ModelAndView viewShowSeats(
             @PathVariable String company,

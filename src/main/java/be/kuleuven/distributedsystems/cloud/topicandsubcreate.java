@@ -16,21 +16,31 @@ import io.grpc.ManagedChannelBuilder;
 import java.io.IOException;
 
 public class topicandsubcreate {
-    public static void main(String... args) throws Exception {
+    public static void start() throws Exception {
         String projectId = "demo-distributed-systems-kul";
-        String subscriptionId = "my_sub";
+
+        String subscriptionId = "my_subscription_test";
         String topicId = "my_topic";
-        String pushEndpoint = "http://localhost:8080/";
+        String pushEndpoint = "http://localhost:8080/subscription";
         ManagedChannel channel = ManagedChannelBuilder.forTarget("localhost:8083").usePlaintext().build();//of waar de pub sub emulator is
+        try {
 
-        // TODO(developer): Replace these variables before running the sample.
-        TransportChannelProvider channelProvider =
-                FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
-        CredentialsProvider credentialsProvider = NoCredentialsProvider.create();
 
-        createTopicExample(projectId, topicId,channelProvider,credentialsProvider);
-        createPushSubscriptionExample(
-               projectId,subscriptionId,topicId,pushEndpoint, channelProvider,credentialsProvider);
+            // TODO(developer): Replace these variables before running the sample.
+            TransportChannelProvider channelProvider =
+                    FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
+            CredentialsProvider credentialsProvider = NoCredentialsProvider.create();
+
+            createTopicExample(projectId, topicId, channelProvider, credentialsProvider);
+            createPushSubscriptionExample(
+                    projectId, subscriptionId, topicId, pushEndpoint, channelProvider, credentialsProvider);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            channel.shutdown();
+        }
     }
 
     public static void createTopicExample(String projectId, String topicId,TransportChannelProvider channelProvider,CredentialsProvider credentialsProvider) throws IOException {

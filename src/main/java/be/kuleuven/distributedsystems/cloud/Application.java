@@ -39,37 +39,13 @@ import java.util.Objects;
 public class Application {
 
     @SuppressWarnings("unchecked")
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
-        //ManagedChannel channel = ManagedChannelBuilder.forTarget("8083").usePlaintext().build();
-        try {
-            //TransportChannelProvider channelProvider =
-                    //FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
-            //CredentialsProvider credentialsProvider = NoCredentialsProvider.create();
-
-            // Set the channel and credentials provider when creating a `TopicAdminClient`.
-            // Similarly for SubscriptionAdminClient
-//            TopicAdminClient topicClient =
-//                    TopicAdminClient.create(
-//                            TopicAdminSettings.newBuilder()
-//                                    .setTransportChannelProvider(channelProvider)
-//                                    .setCredentialsProvider(credentialsProvider)
-//                                    .build());
-
-            TopicName topicName = TopicName.of("my-project-id", "my-topic-id");
-            // Set the channel and credentials provider when creating a `Publisher`.
-            // Similarly for Subscriber
-            Publisher publisher =
-                    Publisher.newBuilder(topicName)
-                            .build();
-            PubsubMessage pubsubMessage= PubsubMessage.newBuilder().
-                                            setData(ByteString.EMPTY)
-                    .putAttributes("key","123123123")
-                    .build();
-            ApiFuture<String> future=publisher.publish(pubsubMessage);
-            System.out.println(future.toString());
-        } catch (IOException e) {
+        try{
+            topicandsubcreate.start();
+        } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("TOPIC AND SUB ALREADY EXIST: NP");
         }
         System.setProperty("server.port", System.getenv().getOrDefault("PORT", "8080"));
 
@@ -79,6 +55,7 @@ public class Application {
 
         // Start Spring Boot application
         ApplicationContext context = SpringApplication.run(Application.class, args);
+
     }
 
     @Bean

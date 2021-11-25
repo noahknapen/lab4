@@ -1,20 +1,35 @@
 package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.*;
+import com.google.api.core.ApiFuture;
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.cloud.pubsub.v1.Publisher;
+import com.google.protobuf.ByteString;
+import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.stereotype.Component;
+import org.springframework.util.SerializationUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @Component
 public class Model {
@@ -24,17 +39,28 @@ public class Model {
     ArrayList<Booking> bookings = new ArrayList<>();
 
     private ApplicationContext context;
-    private PublisherExample publisher;
+    @Autowired
+    private Publisher publisher;
 
-    public Model() {
-        this.publisher = new PublisherExample();
-        try {
-            this.publisher.main();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+
+    @Bean
+    public Publisher publisher() throws IOException {
+        ManagedChannel channel = ManagedChannelBuilder.forTarget("localhost:8083").usePlaintext().build();//of waar de pub sub emulator is
+
+
+        TransportChannelProvider channelProvider =
+                    FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
+        CredentialsProvider credentialsProvider = NoCredentialsProvider.create();
+
+        TopicName topicName = TopicName.of("demo-distributed-systems-kul", "my_topic");
+        Publisher publisher =
+                Publisher.newBuilder(topicName)
+                        .setChannelProvider(channelProvider)
+                        .setCredentialsProvider(credentialsProvider)
+                        .build();
+        return publisher;
     }
-
     @Autowired
     private WebClient.Builder webClientBuilder;
 
@@ -243,23 +269,29 @@ public class Model {
 
     }
 
-    public void confirmQuotes(List<Quote> quotes, String customer) { //hierin pub subben dit zijn allemaal put requests zet in de subriber
+    public void confirmQuotes(List<Quote> quotes, String customer) throws ExecutionException, InterruptedException { //hierin pub subben dit zijn allemaal put requests zet in de subriber
         //dit maakt een booking save list of bookings univailble all those seats is tthis an hardcoded database?
-        ArrayList<Ticket> tickets= new ArrayList<>();
-        for (Quote quote:quotes){
-            UUID show= quote.getShowId();
-            UUID seat= quote.getSeatId();
-            String company = quote.getCompany();
+        PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(ByteString.copyFrom(SerializationUtils.serialize(quotes))).build();
 
-            Ticket ticket= putTicket(company, show, seat, customer);
-            tickets.add(ticket);
-        }
-        Booking booking= new Booking(UUID.randomUUID(),
-                LocalDateTime.now(),
-                tickets,
-                customer
-        );
-        bookings.add(booking);
-        // TODO: reserve all seats for the given quotes
+        ApiFuture<String> messageIdFuture =publisher.publish(pubsubMessage);
+
+        String messageId = messageIdFuture.get();
+        System.out.println("Published message ID: " + messageId);
+//        ArrayList<Ticket> tickets= new ArrayList<>();
+//        for (Quote quote:quotes){
+//            UUID show= quote.getShowId();
+//            UUID seat= quote.getSeatId();
+//            String company = quote.getCompany();
+//
+//            Ticket ticket= putTicket(company, show, seat, customer);
+//            tickets.add(ticket);
+//        }
+//        Booking booking= new Booking(UUID.randomUUID(),
+//                LocalDateTime.now(),
+//                tickets,
+//                customer
+//        );
+//        bookings.add(booking);
+//        // TODO: reserve all seats for the given quotes
     }
 }
