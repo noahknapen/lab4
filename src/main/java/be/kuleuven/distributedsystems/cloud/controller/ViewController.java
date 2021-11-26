@@ -21,6 +21,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +32,8 @@ import java.util.stream.Collectors;
 @RestController
 public class ViewController {
     private final Model model;
+    private final Gson gson = new Gson();
+    private final JsonParser jsonParser = new JsonParser();
 
     @Autowired
     public ViewController(Model model) {
@@ -73,10 +76,6 @@ public class ViewController {
         return modelAndView;
     }
 
-    private final Gson gson = new Gson();
-    private final JsonParser jsonParser = new JsonParser();
-
-
     @ResponseStatus(value = HttpStatus.ACCEPTED)
     @PostMapping("/subscription")
     public ResponseEntity<Void> puttickets(@RequestBody String body){
@@ -95,19 +94,33 @@ public class ViewController {
         System.out.println("DECODED "+decoded);
         System.out.println(body);
         ArrayList<Ticket> tickets= new ArrayList<>();
-        for (Quote quote:quotes){
-            UUID show= quote.getShowId();
-            UUID seat= quote.getSeatId();
-            String company = quote.getCompany();
 
-            Ticket ticket= model.putTicket(company, show, seat, customer);
-            tickets.add(ticket);
-    }
+        try {
+            for (Quote quote : quotes) {
+                UUID show = quote.getShowId();
+                UUID seat = quote.getSeatId();
+                String company = quote.getCompany();
+
+                Ticket ticket = model.putTicket(company, show, seat, customer);
+                tickets.add(ticket);
+            }
+        } catch (WebClientResponseException e) {
+            // One of the tickets was stolen, so do not make a booking
+            return ResponseEntity.ok().build();
+        }
+
+        Booking booking = this.model.createBooking(UUID.randomUUID(), LocalDateTime.now(), tickets, customer);
+        this.model.registerBooking(booking);
+
+        // all or nothing semantics: create all bookings, but only register them if they are all successfull
+
         return ResponseEntity.ok().build();
     }
+
     private String decode(String data) {
         return new String(Base64.getDecoder().decode(data));
     }
+
     @GetMapping("/shows/{company}/{showId}/{time}")
     public ModelAndView viewShowSeats(
             @PathVariable String company,

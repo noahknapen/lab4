@@ -173,41 +173,49 @@ public class Model {
         return seat;
     }
 
-    public Ticket putTicket(String company, UUID showId, UUID seatId, String customer) {
+    public Ticket putTicket(String company, UUID showId, UUID seatId, String customer) throws WebClientResponseException{
         Ticket ticket;
         System.out.println("Company "+company+"showId "+showId+"seatId "+seatId+"Customer "+customer);
-        // WebClient.builder()  context.getBean
-        try {
-            ticket = webClientBuilder
-                    .baseUrl("https://" + company + "/")
-                    .build()
-                    .put()
-                    .uri(uriBuilder -> uriBuilder
-                            .pathSegment("shows")
-                            .pathSegment(showId.toString())
-                            .pathSegment("seats")
-                            .pathSegment(seatId.toString())
-                            .pathSegment("ticket")
-                            .queryParam("key", API_KEY)
-                            .queryParam("customer", customer)
-                            .build())
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<Ticket>() {})
-                    .block();
-        } catch (WebClientResponseException e) {
+
+        // try {
+        ticket = webClientBuilder
+                .baseUrl("https://" + company + "/")
+                .build()
+                .put()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment(showId.toString())
+                        .pathSegment("seats")
+                        .pathSegment(seatId.toString())
+                        .pathSegment("ticket")
+                        .queryParam("key", API_KEY)
+                        .queryParam("customer", customer)
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Ticket>() {})
+                .block();
+        // }
+        /*catch (WebClientResponseException e) {
             e.printStackTrace();
             System.out.println("Ticket has been stolen");
             ticket = new Ticket();
-        }
+        }*/
 
         return ticket;
     }
 
+    public Booking createBooking(UUID id, LocalDateTime time, List<Ticket> tickets, String customer) {
+
+        return new Booking(id, time, tickets, customer);
+    }
+
+    public void registerBooking(Booking booking) {
+        bookings.add(booking);
+    }
 
     public List<Booking> getAllBookings() {
         return bookings;
     }
-
 
     public List<Booking> getBookings(String customer) {
        /* try {
@@ -274,14 +282,13 @@ public class Model {
 
     public void confirmQuotes(List<Quote> quotes, String customer) throws ExecutionException, InterruptedException { //hierin pub subben dit zijn allemaal put requests zet in de subriber
         //dit maakt een booking save list of bookings univailble all those seats is tthis an hardcoded database?
-        ;
-        Quote quote=new Quote("ik.com",new UUID(1L,1L),new UUID(2L,2L));
+        /*Quote quote=new Quote("ik.com",new UUID(1L,1L),new UUID(2L,2L));
         String str= Serializer.serialize(quote);
         System.out.println(str);
         Quote quote1=Serializer.deserializeQuote(str);
         System.out.println(quote1.getSeatId().toString());
         System.out.println(2L);
-        quotes.set(0, quote);
+        quotes.set(0, quote);*/
 
         String message = customer+"::::::::"+Serializer.serialize(quotes);
         ByteString data = ByteString.copyFromUtf8(message);
