@@ -88,25 +88,38 @@ public class ViewController {
         String[] snipped= decoded.split("::::::::");
         String customer=snipped[0];
         List<Quote> quotes=Serializer.deserializeListQuote(snipped[1]);
+
         for (Quote quote:quotes){
             System.out.println("COMPANYY "+quote.getCompany());
         }
+
         System.out.println("DECODED "+decoded);
         System.out.println(body);
         ArrayList<Ticket> tickets= new ArrayList<>();
 
-        try {
-            for (Quote quote : quotes) {
-                UUID show = quote.getShowId();
-                UUID seat = quote.getSeatId();
-                String company = quote.getCompany();
+        int retries = 10;
+        boolean succes = false;
 
-                Ticket ticket = model.putTicket(company, show, seat, customer);
-                tickets.add(ticket);
+        while (!succes) {
+            try {
+                for (Quote quote : quotes) {
+                    UUID show = quote.getShowId();
+                    UUID seat = quote.getSeatId();
+                    String company = quote.getCompany();
+
+                    Ticket ticket = model.putTicket(company, show, seat, customer);
+                    tickets.add(ticket);
+                }
+                succes = true;
+            } catch (WebClientResponseException e) {
+                if (retries > 0) {
+                    retries -= 1;
+                } else {
+                    // One of the tickets was stolen, so do not make a booking
+                    return ResponseEntity.ok().build();
+                }
+
             }
-        } catch (WebClientResponseException e) {
-            // One of the tickets was stolen, so do not make a booking
-            return ResponseEntity.ok().build();
         }
 
         Booking booking = this.model.createBooking(UUID.randomUUID(), LocalDateTime.now(), tickets, customer);
