@@ -85,47 +85,38 @@ public class ViewController {
         System.out.println(messageStr);
 
         String decoded = decode(messageStr);
-        String[] snipped = decoded.split("::::::::");
-        String customer = snipped[0];
-        System.out.println("[VIEWCONTROLLER.putTickets] customer: " + customer);
+        String[] snipped= decoded.split("::::::::");
+        String customer=snipped[0];
+        List<String> quotes=Serializer.deserializeListQuote(snipped[1]);
 
-        List<String> quotes = Serializer.deserializeListQuote(snipped[1]);
-        System.out.println("[VIEWCONTROLLER.putTickets] quotes: " + quotes);
-
-        System.out.println("DECODED " + decoded);
+        System.out.println("DECODED "+decoded);
         System.out.println(body);
-        ArrayList<Ticket> tickets = new ArrayList<>();
+        ArrayList<Ticket> tickets= new ArrayList<>();
 
         int retries = 10;
         boolean succes = false;
 
-//        while (!succes) {
-//            try {
-//                for (Quote quote : quotes) {
-//                    UUID show = quote.getShowId();
-//                    UUID seat = quote.getSeatId();
-//                    String company = quote.getCompany();
-//
-//                    Ticket ticket = model.putTicket(company, show, seat, customer);
-//                    tickets.add(ticket);
-//                }
-//                succes = true;
-//            } catch (WebClientResponseException e) {
-//                if (retries > 0) {
-//                    retries -= 1;
-//                } else {
-//                    // One of the tickets was stolen, so do not make a booking
-//                    return ResponseEntity.ok().build();
-//                }
-//
-//
-//            }
-//       }
+        while (!succes)
+            try {
+                for (String quote : quotes) {
+
+                    String[] snipped2=quote.split(":");
+                    Ticket ticket = model.putTicket(snipped2[0], snipped2[1], snipped2[2], customer);
+                    tickets.add(ticket);
+                    succes = true;
+                }
+            } catch (WebClientResponseException e) {
+                if (retries > 0) {
+                    retries -= 1;
+                } else {
+                    // One of the tickets was stolen, so do not make a booking
+                    return ResponseEntity.ok().build();
+                }
+            }
 
         Booking booking = this.model.createBooking(UUID.randomUUID(), LocalDateTime.now(), tickets, customer);
         this.model.registerBooking(booking);
-
-        // all or nothing semantics: create all bookings, but only register them if they are all successfull
+        System.out.println("registered the booking");
 
         return ResponseEntity.ok().build();
     }
