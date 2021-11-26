@@ -173,7 +173,7 @@ public class Model {
         return seat;
     }
 
-    public Ticket putTicket(String company, UUID showId, UUID seatId, String customer) throws WebClientResponseException{
+    public Ticket putTicket(String company, String showId, String seatId, String customer) throws WebClientResponseException{
         Ticket ticket;
         System.out.println("Company "+company+"showId "+showId+"seatId "+seatId+"Customer "+customer);
 
@@ -184,9 +184,9 @@ public class Model {
                 .put()
                 .uri(uriBuilder -> uriBuilder
                         .pathSegment("shows")
-                        .pathSegment(showId.toString())
+                        .pathSegment(showId)
                         .pathSegment("seats")
-                        .pathSegment(seatId.toString())
+                        .pathSegment(seatId)
                         .pathSegment("ticket")
                         .queryParam("key", API_KEY)
                         .queryParam("customer", customer)

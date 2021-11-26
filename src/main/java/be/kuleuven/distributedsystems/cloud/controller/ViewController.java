@@ -78,49 +78,49 @@ public class ViewController {
 
     @ResponseStatus(value = HttpStatus.ACCEPTED)
     @PostMapping("/subscription")
-    public ResponseEntity<Void> puttickets(@RequestBody String body){
+    public ResponseEntity<Void> putTickets(@RequestBody String body) {
 
         JsonElement jsonRoot = jsonParser.parse(body);
         String messageStr = jsonRoot.getAsJsonObject().get("message").getAsJsonObject().get("data").getAsString();
         System.out.println(messageStr);
 
         String decoded = decode(messageStr);
-        String[] snipped= decoded.split("::::::::");
-        String customer=snipped[0];
-        List<Quote> quotes=Serializer.deserializeListQuote(snipped[1]);
+        String[] snipped = decoded.split("::::::::");
+        String customer = snipped[0];
+        System.out.println("[VIEWCONTROLLER.putTickets] customer: " + customer);
 
-        for (Quote quote:quotes){
-            System.out.println("COMPANYY "+quote.getCompany());
-        }
+        List<String> quotes = Serializer.deserializeListQuote(snipped[1]);
+        System.out.println("[VIEWCONTROLLER.putTickets] quotes: " + quotes);
 
-        System.out.println("DECODED "+decoded);
+        System.out.println("DECODED " + decoded);
         System.out.println(body);
-        ArrayList<Ticket> tickets= new ArrayList<>();
+        ArrayList<Ticket> tickets = new ArrayList<>();
 
         int retries = 10;
         boolean succes = false;
 
-        while (!succes) {
-            try {
-                for (Quote quote : quotes) {
-                    UUID show = quote.getShowId();
-                    UUID seat = quote.getSeatId();
-                    String company = quote.getCompany();
-
-                    Ticket ticket = model.putTicket(company, show, seat, customer);
-                    tickets.add(ticket);
-                }
-                succes = true;
-            } catch (WebClientResponseException e) {
-                if (retries > 0) {
-                    retries -= 1;
-                } else {
-                    // One of the tickets was stolen, so do not make a booking
-                    return ResponseEntity.ok().build();
-                }
-
-            }
-        }
+//        while (!succes) {
+//            try {
+//                for (Quote quote : quotes) {
+//                    UUID show = quote.getShowId();
+//                    UUID seat = quote.getSeatId();
+//                    String company = quote.getCompany();
+//
+//                    Ticket ticket = model.putTicket(company, show, seat, customer);
+//                    tickets.add(ticket);
+//                }
+//                succes = true;
+//            } catch (WebClientResponseException e) {
+//                if (retries > 0) {
+//                    retries -= 1;
+//                } else {
+//                    // One of the tickets was stolen, so do not make a booking
+//                    return ResponseEntity.ok().build();
+//                }
+//
+//
+//            }
+//       }
 
         Booking booking = this.model.createBooking(UUID.randomUUID(), LocalDateTime.now(), tickets, customer);
         this.model.registerBooking(booking);
