@@ -102,8 +102,16 @@ public class ViewController {
         String decoded = decode(messageStr);
         String[] snipped= decoded.split("::::::::");
         String customer=snipped[0];
-        List<String> quotes=Serializer.deserializeListQuote(snipped[1]);
-
+        List<String> quotes=new ArrayList();
+        try {
+           quotes = Serializer.deserializeListQuote(snipped[1]);
+        }
+        catch (Exception e
+        )
+        {
+            System.out.println("recieved empty quotes");
+            return ResponseEntity.ok().build();
+        }
         ArrayList<Ticket> tickets= new ArrayList<>();
 
         boolean success = false;

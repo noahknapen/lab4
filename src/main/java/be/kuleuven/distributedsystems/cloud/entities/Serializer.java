@@ -15,11 +15,11 @@ public class Serializer{
 
 
     public static String serialize(UUID uuid) {
-        System.out.println("UUID = "+String.valueOf(uuid.getLeastSignificantBits())+":"+String.valueOf(uuid.getMostSignificantBits()));
+
         return String.valueOf(uuid.getLeastSignificantBits())+":"+String.valueOf(uuid.getMostSignificantBits());
     }
     public static String serialize(Quote quote){
-        System.out.println("Quote = "+quote.getCompany()+":"+serialize(quote.getShowId())+":"+serialize(quote.getSeatId()));
+
         return quote.getCompany()+":"+ quote.getShowId().toString()+":"+quote.getSeatId().toString();
     }
     public static String serialize(List<Quote> quotes){
@@ -31,9 +31,9 @@ public class Serializer{
     }
 
     public static Quote deserializeQuote(String sting){
-        System.out.println("Quote to DEserialize: "+sting);
+
         String[] snipped=sting.split(":");
-        System.out.println(new Long(snipped[1]) + snipped[2]);
+
         Quote quote=new Quote(snipped[0],new UUID(new Long(snipped[1]) ,new Long(snipped[2])),new UUID(new Long(snipped[3]) ,new Long(snipped[4])));
         return quote;
         }

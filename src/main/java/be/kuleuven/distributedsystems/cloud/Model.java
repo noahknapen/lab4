@@ -176,7 +176,7 @@ public class Model {
 
     public Ticket putTicket(String company, String showId, String seatId, String customer) throws WebClientResponseException{
         Ticket ticket;
-        System.out.println("Company "+company+"showId "+showId+"seatId "+seatId+"Customer "+customer);
+        //System.out.println("Company "+company+"showId "+showId+"seatId "+seatId+"Customer "+customer);
 
         ticket = webClientBuilder
                 .baseUrl("https://" + company + "/")
