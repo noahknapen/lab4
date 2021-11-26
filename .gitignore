@@ -1,2 +1,5 @@
 .idea/
 target/
+firebase-debug.log
+firestore-debug.log
+pubsub-debug.log
