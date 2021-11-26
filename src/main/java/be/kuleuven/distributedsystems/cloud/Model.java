@@ -31,6 +31,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 @Component
@@ -41,10 +42,9 @@ public class Model {
     ArrayList<Booking> bookings = new ArrayList<>();
 
     private ApplicationContext context;
+
     @Autowired
     private Publisher publisher;
-
-
 
     @Bean
     public Publisher publisher() throws IOException {
@@ -63,11 +63,12 @@ public class Model {
                         .build();
         return publisher;
     }
+
     @Autowired
     private WebClient.Builder webClientBuilder;
 
-    public List<Show> getShows() {//skip
-        List<Show> shows = null;
+    public List<Show> getShows() {
+        List<Show> shows;
 
         // WebClient.builder()  context.getBean
         Collection<Show> showsCollection = webClientBuilder
@@ -88,21 +89,28 @@ public class Model {
         return shows;
     }
 
-    public Show getShow(String company, UUID showId) {//skip
-        Show show = null;
+    public Show getShow(String company, UUID showId) {
+        Show show;
 
-        for (Show potentialShow : this.getShows()) {
-            if (potentialShow.getShowId().equals(showId) && Objects.equals(potentialShow.getCompany(), company)) {
-                show = new Show(company, showId, potentialShow.getName(), potentialShow.getLocation(), potentialShow.getImage());
-            }
-        }
+        show = webClientBuilder
+                .baseUrl("https://" + company + "/")
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .pathSegment("shows")
+                        .pathSegment(showId.toString())
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Show>() {})
+                .block();
+
         return show;
     }
 
-    public List<LocalDateTime> getShowTimes(String company, UUID showId) {//ni doen
+    public List<LocalDateTime> getShowTimes(String company, UUID showId) {
         List<LocalDateTime> times;
 
-        // WebClient.builder()  context.getBean
         Collection<LocalDateTime> timesCollection = webClientBuilder
                 .baseUrl("https://" + company + "/")
                 .build()
@@ -150,7 +158,7 @@ public class Model {
         return seats;
     }
 
-    public Seat getSeat(String company, UUID showId, UUID seatId) { //googlefiene
+    public Seat getSeat(String company, UUID showId, UUID seatId) {
         Seat seat;
 
         seat = webClientBuilder
@@ -177,7 +185,6 @@ public class Model {
         Ticket ticket;
         System.out.println("Company "+company+"showId "+showId+"seatId "+seatId+"Customer "+customer);
 
-        // try {
         ticket = webClientBuilder
                 .baseUrl("https://" + company + "/")
                 .build()
@@ -194,12 +201,6 @@ public class Model {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Ticket>() {})
                 .block();
-        // }
-        /*catch (WebClientResponseException e) {
-            e.printStackTrace();
-            System.out.println("Ticket has been stolen");
-            ticket = new Ticket();
-        }*/
 
         return ticket;
     }
@@ -281,14 +282,6 @@ public class Model {
     }
 
     public void confirmQuotes(List<Quote> quotes, String customer) throws ExecutionException, InterruptedException { //hierin pub subben dit zijn allemaal put requests zet in de subriber
-        //dit maakt een booking save list of bookings univailble all those seats is tthis an hardcoded database?
-        /*Quote quote=new Quote("ik.com",new UUID(1L,1L),new UUID(2L,2L));
-        String str= Serializer.serialize(quote);
-        System.out.println(str);
-        Quote quote1=Serializer.deserializeQuote(str);
-        System.out.println(quote1.getSeatId().toString());
-        System.out.println(2L);
-        quotes.set(0, quote);*/
 
         String message = customer+"::::::::"+Serializer.serialize(quotes);
         ByteString data = ByteString.copyFromUtf8(message);
@@ -296,21 +289,5 @@ public class Model {
         ApiFuture<String> messageIdFuture =publisher.publish(pubsubMessage);
         String messageId = messageIdFuture.get();
         System.out.println("Published message ID: " + messageId);
-//        ArrayList<Ticket> tickets= new ArrayList<>();
-//        for (Quote quote:quotes){
-//            UUID show= quote.getShowId();
-//            UUID seat= quote.getSeatId();
-//            String company = quote.getCompany();
-//
-//            Ticket ticket= putTicket(company, show, seat, customer);
-//            tickets.add(ticket);
-//        }
-//        Booking booking= new Booking(UUID.randomUUID(),
-//                LocalDateTime.now(),
-//                tickets,
-//                customer
-//        );
-//        bookings.add(booking);
-//        // TODO: reserve all seats for the given quotes
     }
 }

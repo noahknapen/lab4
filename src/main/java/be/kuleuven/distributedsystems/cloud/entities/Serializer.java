@@ -25,10 +25,11 @@ public class Serializer{
     public static String serialize(List<Quote> quotes){
         String totalsting="";
         for (Quote quote:quotes){
-            totalsting+="//"+serialize(quote);
+            totalsting+="/////"+serialize(quote);
         }
         return totalsting;
     }
+
     public static Quote deserializeQuote(String sting){
         System.out.println("Quote to DEserialize: "+sting);
         String[] snipped=sting.split(":");
@@ -38,9 +39,9 @@ public class Serializer{
         }
 
     public static List<String> deserializeListQuote(String string){
-        string=string.substring(2,string.length());
+        string=string.substring(5,string.length());
 
-        List<String> wordList = Arrays.asList(string.split("//"));
+        List<String> wordList = Arrays.asList(string.split("/////"));
         return wordList;
     }
 
