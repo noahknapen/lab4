@@ -87,21 +87,17 @@ public class ViewController {
         String decoded = decode(messageStr);
         String[] snipped= decoded.split("::::::::");
         String customer=snipped[0];
-        List<Quote> quotes=Serializer.deserializeListQuote(snipped[1]);
-        for (Quote quote:quotes){
-            System.out.println("COMPANYY "+quote.getCompany());
-        }
+        List<String> quotes=Serializer.deserializeListQuote(snipped[1]);
+
         System.out.println("DECODED "+decoded);
         System.out.println(body);
         ArrayList<Ticket> tickets= new ArrayList<>();
 
         try {
-            for (Quote quote : quotes) {
-                UUID show = quote.getShowId();
-                UUID seat = quote.getSeatId();
-                String company = quote.getCompany();
+            for (String quote : quotes) {
 
-                Ticket ticket = model.putTicket(company, show, seat, customer);
+                String[] snipped2=quote.split(":");
+                Ticket ticket = model.putTicket(snipped2[0], snipped2[1], snipped2[2], customer);
                 tickets.add(ticket);
             }
         } catch (WebClientResponseException e) {

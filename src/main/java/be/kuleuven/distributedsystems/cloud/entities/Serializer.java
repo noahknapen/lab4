@@ -1,11 +1,13 @@
 package be.kuleuven.distributedsystems.cloud.entities;
 
+import be.kuleuven.distributedsystems.cloud.Model;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,7 +20,7 @@ public class Serializer{
     }
     public static String serialize(Quote quote){
         System.out.println("Quote = "+quote.getCompany()+":"+serialize(quote.getShowId())+":"+serialize(quote.getSeatId()));
-        return quote.getCompany()+":"+serialize(quote.getShowId())+":"+serialize(quote.getSeatId());
+        return quote.getCompany()+":"+ quote.getShowId().toString()+":"+quote.getSeatId().toString();
     }
     public static String serialize(List<Quote> quotes){
         String totalsting="";
@@ -35,16 +37,11 @@ public class Serializer{
         return quote;
         }
 
-    public static List<Quote> deserializeListQuote(String string){
+    public static List<String> deserializeListQuote(String string){
         string=string.substring(2,string.length());
-        String[] snipped=string.split("//");
 
-        ArrayList<Quote> quotes=new ArrayList<>();
-        for (String sting:snipped){
-            quotes.add(deserializeQuote(sting));
-
-        }
-        return quotes;
+        List<String> wordList = Arrays.asList(string.split("//"));
+        return wordList;
     }
 
 
