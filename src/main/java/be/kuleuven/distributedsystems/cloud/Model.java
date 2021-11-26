@@ -1,7 +1,6 @@
 package be.kuleuven.distributedsystems.cloud;
 
 import be.kuleuven.distributedsystems.cloud.entities.*;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.google.api.core.ApiFuture;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -14,17 +13,12 @@ import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
-import org.checkerframework.checker.units.qual.A;
-import org.eclipse.jetty.util.ajax.JSONPojoConvertor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.stereotype.Component;
-import org.springframework.util.SerializationUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -37,7 +31,7 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class Model {
 
-    String RELIABLE_THEATRE_URL = "https://reliabletheatrecompany.com/";
+    String THEATRE_URL = "https://reliabletheatrecompany.com/";
     String API_KEY = "wCIoTqec6vGJijW2meeqSokanZuqOL";
     ArrayList<Booking> bookings = new ArrayList<>();
 
@@ -72,7 +66,7 @@ public class Model {
 
         // WebClient.builder()  context.getBean
         Collection<Show> showsCollection = webClientBuilder
-                .baseUrl(RELIABLE_THEATRE_URL)
+                .baseUrl(THEATRE_URL)
                 .build()
                 .get()
                 .uri(uriBuilder -> uriBuilder
@@ -170,8 +164,7 @@ public class Model {
                         .pathSegment(showId.toString())
                         .pathSegment("seats")
                         .pathSegment(seatId.toString())
-                        // .queryParam("time", time.toString())
-                        // .queryParam("available", "true")
+                        .queryParam("available", "true")
                         .queryParam("key", API_KEY)
                         .build())
                 .retrieve()
@@ -195,6 +188,7 @@ public class Model {
                         .pathSegment("seats")
                         .pathSegment(seatId)
                         .pathSegment("ticket")
+                        .queryParam("available", "true")
                         .queryParam("key", API_KEY)
                         .queryParam("customer", customer)
                         .build())
@@ -240,7 +234,13 @@ public class Model {
     }
 
     public Set<String> getBestCustomers() {
-        // TODO: return the best customer (highest number of tickets, return all of them if multiple customers have an equal amount)
+
+        if (this.bookings.size() == 0) {
+            Set<String> dummy= new HashSet<>();
+            dummy.add("no bookings");
+            return dummy;
+        }
+
         LinkedHashMap<String, Integer> customerTickets = new LinkedHashMap<>();
         try {
             for (Booking booking : this.bookings) {

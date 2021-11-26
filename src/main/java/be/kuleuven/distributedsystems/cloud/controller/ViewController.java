@@ -2,28 +2,16 @@ package be.kuleuven.distributedsystems.cloud.controller;
 
 import be.kuleuven.distributedsystems.cloud.Model;
 import be.kuleuven.distributedsystems.cloud.entities.*;
-import com.google.api.services.storage.model.Bucket;
-import com.google.firebase.messaging.Message;
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.google.pubsub.v1.PubsubMessage;
-import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.SerializationUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -114,10 +102,8 @@ public class ViewController {
         String decoded = decode(messageStr);
         String[] snipped= decoded.split("::::::::");
         String customer=snipped[0];
-        System.out.println("[VIEWCONTROLLER.putTicket]\n\n\n\ndecoded: " + decoded);
         List<String> quotes=Serializer.deserializeListQuote(snipped[1]);
 
-        System.out.println(body);
         ArrayList<Ticket> tickets= new ArrayList<>();
 
         boolean success = false;
@@ -128,17 +114,14 @@ public class ViewController {
 
                     String[] snipped2=quote.split(":");
                     Ticket ticket = model.putTicket(snipped2[0], snipped2[1], snipped2[2], customer);
-                    System.out.println("[VIEWCONTROLLER.putTicket] ticket: " + ticket);
                     tickets.add(ticket);
                     success = true;
                     this.RETRIES = this.MAX_RETRIES;
                 }
             } catch (WebClientResponseException e) {
-                System.out.println("[VIEWCONTROLLER.putTicket] got a webclientresponseexception");
                 if (this.RETRIES > 0) {
                     this.RETRIES -= 1;
                 } else {
-                    System.out.println("[VIEWCONTROLLER.putTicket] retried maximum number of times");
                     return ResponseEntity.ok().build();
                 }
             }
@@ -150,7 +133,6 @@ public class ViewController {
 
         Booking booking = this.model.createBooking(UUID.randomUUID(), LocalDateTime.now(), tickets, customer);
         this.model.registerBooking(booking);
-        System.out.println("registered the booking");
 
         return ResponseEntity.ok().build();
     }
@@ -321,6 +303,7 @@ public class ViewController {
                 }
             }
         }
+
 
         modelAndView.addObject("bookings", bookings);
         modelAndView.addObject("seats", seats);
